@@ -86,17 +86,17 @@ namespace BankDumperLib
         public static bool ExtractFile(Stream input, Stream output)
         {
             var searchBuffer = new byte[LargestPattern];
+            var searchBufferLastPosition = searchBuffer.Length - 1;
 
             // Input Loop
-            int bytesRead;
-            while ((bytesRead = input.Read(searchBuffer, 0, searchBuffer.Length)) > 0)
-            {
-                if (bytesRead < ShortestPattern)
-                {
-                    // No possible pattern match anymore, exit early
-                    break;
-                }
+            int currentByte;
+#warning Reading it like that will kill the performance, needs to be updated
+            // -1 means that there are no more bytes available
 
+            // Wait why does readbyte returns int???
+            while ((currentByte = input.ReadByte()) != -1)
+            {
+                searchBuffer[searchBufferLastPosition] = (byte)currentByte;
 #warning need case for different sized patterns at the beggining of the file
 
                 if (TestAllPatterns(searchBuffer))
@@ -106,6 +106,12 @@ namespace BankDumperLib
                     // That should copy from the current position to the end of the stream
                     input.CopyTo(output);
                     return true;
+                }
+
+                // Shift Bytes
+                for (int i = 0; i < searchBufferLastPosition; i++)
+                {
+                    searchBuffer[i] = searchBuffer[i + 1];
                 }
             }
 
