@@ -92,17 +92,14 @@ namespace BankDumperLib
             int currentByte;
 #warning Reading it like that will kill the performance, needs to be updated
             // -1 means that there are no more bytes available
-
             // Wait why does readbyte returns int???
             while ((currentByte = input.ReadByte()) != -1)
             {
                 searchBuffer[searchBufferLastPosition] = (byte)currentByte;
-#warning need case for different sized patterns at the beggining of the file
 
                 if (TestAllPatterns(searchBuffer))
                 {
                     // Pattern dettected
-
                     // That should copy from the current position to the end of the stream
                     input.CopyTo(output);
                     return true;
