@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BankDumperCLI": {
+      "commandName": "Project",
+      "commandLineArgs": "\"D:\\Code\\C#\\BankDumper\\BankDumperCLI\\test.dat\"\r\n\"D:\\Code\\C#\\BankDumper\\BankDumperCLI\\output.dat\"\r\n\"--force\""
+    }
+  }
+}
