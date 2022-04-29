@@ -66,7 +66,7 @@ namespace BankDumperLib
 
             var fileCount = 0;
 
-            PatternFind? marker;
+            MagicNumberFound? marker;
             var outputName = string.Format(args[1], fileCount);
             using (var input = File.Open(args[0], FileMode.Open, FileAccess.ReadWrite, FileShare.None))
             {
@@ -84,7 +84,7 @@ namespace BankDumperLib
                         Environment.Exit(1);
                     }
 
-                    Console.WriteLine($"Success, marker => '{marker.Pattern.Text}' found at => '{marker.Position}'");
+                    Console.WriteLine($"Success, marker => '{marker.Pattern.Text}' found at => '{marker.Position}' from the previous.");
                 }
             }
 
@@ -102,7 +102,7 @@ namespace BankDumperLib
 
                     using (var newOutput = File.Open(outputName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
                     {
-                        marker = BankDumper.ExtractMultiple(newInput, newOutput);
+                        marker = BankDumper.ExtractAndCut(newInput, newOutput);
 
                         if (marker == null)
                         {
