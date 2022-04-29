@@ -1,0 +1,19 @@
+[
+    {
+        "Text": "FSB5",
+        "Bytes": null
+    },
+    {
+        "Text": "BKHD",
+        "Bytes": null
+    },
+    {
+        "Text": "AKPK Pattern",
+        "Bytes": [
+            65,
+            75,
+            80,
+            75
+        ]
+    }
+]

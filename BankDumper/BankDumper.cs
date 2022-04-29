@@ -1,25 +1,66 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace BankDumperLib
 {
-    public class MagicNumbers
+    public class MagicNumber
     {
-        public string Name { get; }
-        public byte[] Value { get; }
-
-        public MagicNumbers(string value)
+        internal class ByteArrayConverter : JsonConverter<byte[]>
         {
-            Name = value;
-            Value = Encoding.ASCII.GetBytes(value);
+            public override byte[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                var charArray = JsonSerializer.Deserialize<sbyte[]>(ref reader);
+
+                if (charArray == null)
+                {
+                    return null;
+                }
+
+                return Unsafe.As<byte[]>(charArray);
+            }
+
+            public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
+            {
+                writer.WriteStartArray();
+
+                for (int i = 0; i < value.Length; i++)
+                {
+                    writer.WriteNumberValue(value[i]);
+                }
+
+                writer.WriteEndArray();
+            }
         }
+
+        public string Text { get; }
+        [JsonConverter(typeof(ByteArrayConverter))]
+        public byte[] Bytes { get; }
+
+        [JsonConstructor]
+        public MagicNumber(string Text, byte[] Bytes = null)
+        {
+            this.Text = Text;
+
+            if (Bytes == null)
+            {
+                this.Bytes =Encoding.ASCII.GetBytes(Text);
+            }
+            else
+            {
+                this.Bytes = Bytes;
+            }
+        }
+
     }
 
     public class PatternFind
     {
-        public MagicNumbers Pattern { get; internal set; }
+        public MagicNumber Pattern { get; internal set; }
         public long Position { get; internal set; }
     }
 
@@ -32,26 +73,61 @@ namespace BankDumperLib
             MagicNumbers.LoadDefaultMagicNumbers();
         }
 
-        public static void LoadDefaultMagicNumbers(this List<MagicNumbers> numbers)
+        public static void LoadDefaultMagicNumbers(this List<MagicNumber> numbers)
         {
-            numbers.Add(new MagicNumbers("FSB5"));
-            numbers.Add(new MagicNumbers("BKHD"));
-            numbers.Add(new MagicNumbers("AKPK"));
+            numbers.Add(new MagicNumber("FSB5"));
+            numbers.Add(new MagicNumber("BKHD"));
+            numbers.Add(new MagicNumber("AKPK"));
+            UpdateCache();
         }
 
-        public static readonly List<MagicNumbers> MagicNumbers = new List<MagicNumbers>();
+        public static bool TryAddMagicNumber(MagicNumber number)
+        {
+            var result = TryFindPattern(number.Bytes);
+            if (result != null)
+            {
+                // Prevents adding the same number twice
+                return false;
+            }
 
-        private static readonly int LargestPattern = 0;
-        static BankDumper()
+            MagicNumbers.Add(number);
+            UpdateCache();
+            // Added!
+            return true;
+        }
+
+        public static bool TryRemoveMagicNumber(string name)
+        {
+            for (int i = 0; i < MagicNumbers.Count; i++)
+            {
+                if (MagicNumbers[i].Text == name)
+                {
+                    MagicNumbers.RemoveAt(i);
+                    UpdateCache();
+                    //Removed Sucessfully
+                    return true;
+                }
+
+            }
+
+            // Not Found
+            return false;
+        }
+
+        private static readonly List<MagicNumber> MagicNumbers = new List<MagicNumber>();
+
+        private static int LargestPattern = 0;
+
+        private static void UpdateCache()
         {
             // Initialize data that will be helpful later
             for (int MagicNumberIndex = 0; MagicNumberIndex < MagicNumbers.Count; MagicNumberIndex++)
             {
                 var current = MagicNumbers[MagicNumberIndex];
 
-                if (LargestPattern < current.Value.Length)
+                if (LargestPattern < current.Bytes.Length)
                 {
-                    LargestPattern = current.Value.Length;
+                    LargestPattern = current.Bytes.Length;
                 }
             }
         }
@@ -61,14 +137,14 @@ namespace BankDumperLib
         /// </summary>
         /// <param name="value"></param>
         /// <returns>Pattern matched or null</returns>
-        private static MagicNumbers? TryFindPattern(byte[] value)
+        private static MagicNumber? TryFindPattern(byte[] value)
         {
             for (int MagicNumberIndex = 0; MagicNumberIndex < MagicNumbers.Count; MagicNumberIndex++)
             {
                 var current = MagicNumbers[MagicNumberIndex];
-                if (EndsWithPattern(value, current.Value))
+                if (EndsWithPattern(value, current.Bytes))
                 {
-                    Console.WriteLine($"Detected => {current.Name}");
+                    Console.WriteLine($"Detected => {current.Text}");
                     return current;
                 }
             }
@@ -116,7 +192,7 @@ namespace BankDumperLib
                     var data = new PatternFind()
                     {
                         Pattern = pattern,
-                        Position = input.Position - pattern.Value.Length,
+                        Position = input.Position - pattern.Bytes.Length,
                     };
 
                     // That should copy from the current position to the end of the stream

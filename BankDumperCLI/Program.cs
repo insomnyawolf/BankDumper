@@ -1,4 +1,6 @@
-﻿namespace BankDumperLib
+﻿using System.Text.Json;
+
+namespace BankDumperLib
 {
     internal class Program
     {
@@ -25,7 +27,42 @@
                 Environment.Exit(1);
             }
 
+#if true
+            // This is a example of loading magic numbers from a file
+            using var magicNumbersFile = File.Open(Path.Combine(AppContext.BaseDirectory, "magicNumbers.json"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+
+            // This fills a sample file
+            if (magicNumbersFile.Length == 0)
+            {
+                var sample = new List<MagicNumber>()
+                {
+                    new MagicNumber("FSB5"),
+                    new MagicNumber("BKHD"),
+                    new MagicNumber("AKPK"),
+                };
+
+                JsonSerializer.Serialize(magicNumbersFile, sample);
+
+                magicNumbersFile.Position = 0;
+            }
+
+            var magicNumbers = JsonSerializer.Deserialize<List<MagicNumber>>(magicNumbersFile);
+
+            // Validations are never bad
+            if (magicNumbers != null)
+            {
+                foreach (var number in magicNumbers)
+                {
+                    if (!BankDumper.TryAddMagicNumber(number))
+                    {
+                        Console.WriteLine($"Could not add => '{number.Text}', it already exists.");
+                    }
+                }
+            }
+
+#else
             BankDumper.LoadDefaultMagicNumbers();
+#endif
 
             var fileCount = 0;
 
@@ -47,11 +84,11 @@
                         Environment.Exit(1);
                     }
 
-                    Console.WriteLine($"Success, marker => '{marker.Pattern.Name}' found at => '{marker.Position}'");
+                    Console.WriteLine($"Success, marker => '{marker.Pattern.Text}' found at => '{marker.Position}'");
                 }
             }
 
-            
+
 
             while (marker != null)
             {
@@ -79,7 +116,7 @@
                             Environment.Exit(0);
                         }
 
-                        Console.WriteLine($"Success, marker => '{marker.Pattern.Name}' found at => '{marker.Position}'");
+                        Console.WriteLine($"Success, marker => '{marker.Pattern.Text}' found at => '{marker.Position}'");
                     }
                 }
             }
