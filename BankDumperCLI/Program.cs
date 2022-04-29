@@ -84,7 +84,7 @@ namespace BankDumperLib
                         Environment.Exit(1);
                     }
 
-                    Console.WriteLine($"Success, marker => '{marker.Pattern.Text}' found at => '{marker.Position}' from the previous.");
+                    Console.WriteLine($"Success, marker => '{marker.Pattern.Text}' found at => '{marker.Position}'");
                 }
             }
 
@@ -116,7 +116,7 @@ namespace BankDumperLib
                             Environment.Exit(0);
                         }
 
-                        Console.WriteLine($"Success, marker => '{marker.Pattern.Text}' found at => '{marker.Position}'");
+                        Console.WriteLine($"Success, marker => '{marker.Pattern.Text}' found at => '{marker.Position}' away from the previous.");
                     }
                 }
             }
