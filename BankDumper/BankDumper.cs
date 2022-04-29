@@ -7,8 +7,8 @@ namespace BankDumperLib
 {
     public class MagicNumbers
     {
-        public string Name { get; private set; }
-        public byte[] Value { get; private set; }
+        public string Name { get; }
+        public byte[] Value { get; }
 
         public MagicNumbers(string value)
         {
@@ -17,22 +17,24 @@ namespace BankDumperLib
         }
     }
 
+    public class PatternFind
+    {
+        public MagicNumbers Pattern { get; internal set; }
+        public long Position { get; internal set; }
+    }
+
     // Take care for pattern at position 0
 
     public static class BankDumper
     {
         public static readonly List<MagicNumbers> MagicNumbers = new List<MagicNumbers>()
         {
-            // new byte[] { 70, 83, 66, 53 }
             new MagicNumbers("FSB5"),
-            // new byte[] { 66, 75, 72, 68 }
             new MagicNumbers("BKHD"),
-            // new byte[] { 65, 75, 80, 75 }
             new MagicNumbers("AKPK"),
         };
 
         private static readonly int LargestPattern = 0;
-        private static readonly int ShortestPattern = int.MaxValue;
         static BankDumper()
         {
             // Initialize data that will be helpful later
@@ -44,28 +46,24 @@ namespace BankDumperLib
                 {
                     LargestPattern = current.Value.Length;
                 }
-
-                if (ShortestPattern > current.Value.Length)
-                {
-                    ShortestPattern = current.Value.Length;
-                }
             }
         }
 
-        private static bool TestAllPatterns(byte[] value)
+        private static MagicNumbers? TestAllPatterns(byte[] value)
         {
             for (int MagicNumberIndex = 0; MagicNumberIndex < MagicNumbers.Count; MagicNumberIndex++)
             {
-                if (TestPattern(value, MagicNumbers[MagicNumberIndex].Value))
+                var current = MagicNumbers[MagicNumberIndex];
+                if (TestPattern(value, current.Value))
                 {
-                    Console.WriteLine($"Detected => {MagicNumbers[MagicNumberIndex].Name}");
-                    return true;
+                    Console.WriteLine($"Detected => {current.Name}");
+                    return current;
                 }
             }
-            return false;
+            return null;
         }
 
-        private static bool TestPattern(byte[] value, byte[]pattern)
+        private static bool TestPattern(byte[] value, byte[] pattern)
         {
 #warning maybe optimize this
             if (pattern.Length > value.Length)
@@ -83,7 +81,7 @@ namespace BankDumperLib
             return true;
         }
 
-        public static bool ExtractFile(Stream input, Stream output)
+        public static PatternFind? Extract(Stream input, Stream output)
         {
             var searchBuffer = new byte[LargestPattern];
             var searchBufferLastPosition = searchBuffer.Length - 1;
@@ -97,12 +95,21 @@ namespace BankDumperLib
             {
                 searchBuffer[searchBufferLastPosition] = (byte)currentByte;
 
-                if (TestAllPatterns(searchBuffer))
+                var pattern = TestAllPatterns(searchBuffer);
+                if (pattern != null)
                 {
                     // Pattern dettected
+
+                    // Save useful Data
+                    var data = new PatternFind()
+                    {
+                        Pattern = pattern,
+                        Position = input.Position - pattern.Value.Length,
+                    };
+
                     // That should copy from the current position to the end of the stream
                     input.CopyTo(output);
-                    return true;
+                    return data;
                 }
 
                 // Shift Bytes
@@ -113,7 +120,21 @@ namespace BankDumperLib
             }
 
             Console.WriteLine($"File didn't match any pattern.");
-            return false;
+            return null;
+        }
+
+        public static PatternFind? ExtractMultiple(Stream input, Stream output)
+        {
+            var found = Extract(input, output);
+
+            if (found != null)
+            {
+#warning i don't know if that's supported on all kinds of streams
+                input.SetLength(found.Position);
+                // Shorten the stream so it only contains certain file
+            }
+
+            return found;
         }
     }
 }
