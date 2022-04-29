@@ -25,6 +25,8 @@
                 Environment.Exit(1);
             }
 
+            BankDumper.LoadDefaultMagicNumbers();
+
             var fileCount = 0;
 
             PatternFind? marker;

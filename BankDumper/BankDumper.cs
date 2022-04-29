@@ -27,12 +27,19 @@ namespace BankDumperLib
 
     public static class BankDumper
     {
-        public static readonly List<MagicNumbers> MagicNumbers = new List<MagicNumbers>()
+        public static void LoadDefaultMagicNumbers()
         {
-            new MagicNumbers("FSB5"),
-            new MagicNumbers("BKHD"),
-            new MagicNumbers("AKPK"),
-        };
+            MagicNumbers.LoadDefaultMagicNumbers();
+        }
+
+        public static void LoadDefaultMagicNumbers(this List<MagicNumbers> numbers)
+        {
+            numbers.Add(new MagicNumbers("FSB5"));
+            numbers.Add(new MagicNumbers("BKHD"));
+            numbers.Add(new MagicNumbers("AKPK"));
+        }
+
+        public static readonly List<MagicNumbers> MagicNumbers = new List<MagicNumbers>();
 
         private static readonly int LargestPattern = 0;
         static BankDumper()
@@ -49,12 +56,17 @@ namespace BankDumperLib
             }
         }
 
-        private static MagicNumbers? TestAllPatterns(byte[] value)
+        /// <summary>
+        /// Calls EndsWithPattern on eacha available pattern on MagicNumbers list
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>Pattern matched or null</returns>
+        private static MagicNumbers? TryFindPattern(byte[] value)
         {
             for (int MagicNumberIndex = 0; MagicNumberIndex < MagicNumbers.Count; MagicNumberIndex++)
             {
                 var current = MagicNumbers[MagicNumberIndex];
-                if (TestPattern(value, current.Value))
+                if (EndsWithPattern(value, current.Value))
                 {
                     Console.WriteLine($"Detected => {current.Name}");
                     return current;
@@ -63,7 +75,7 @@ namespace BankDumperLib
             return null;
         }
 
-        private static bool TestPattern(byte[] value, byte[] pattern)
+        private static bool EndsWithPattern(byte[] value, byte[] pattern)
         {
 #warning maybe optimize this
             if (pattern.Length > value.Length)
@@ -95,7 +107,7 @@ namespace BankDumperLib
             {
                 searchBuffer[searchBufferLastPosition] = (byte)currentByte;
 
-                var pattern = TestAllPatterns(searchBuffer);
+                var pattern = TryFindPattern(searchBuffer);
                 if (pattern != null)
                 {
                     // Pattern dettected
