@@ -86,7 +86,8 @@ namespace BankDumperLib
             var result = TryFindPattern(number.Bytes);
             if (result != null)
             {
-                // Prevents adding the same number twice
+                // Prevents adding the same pattern twice
+                // This will improve performance exponentially if the user doesn't validate which data inputs here
                 return false;
             }
 
@@ -173,6 +174,10 @@ namespace BankDumperLib
         {
             var searchBuffer = new byte[LargestPattern];
             var searchBufferLastPosition = searchBuffer.Length - 1;
+
+
+#warning Can be optimized by reading as many bytes as the shortest pattern has in a single go, it won't help performance that much but it's something
+
 
             // Input Loop
             int currentByte;
