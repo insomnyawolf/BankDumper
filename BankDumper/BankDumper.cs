@@ -32,11 +32,12 @@ namespace BankDumperLib
             }
         }
 
-        public static void LoadDefaultMagicNumbers()
+        public static void LoadDefaultPatterns()
         {
             PatternsLoaded.Add(new Pattern("FSB5"));
             PatternsLoaded.Add(new Pattern("BKHD"));
             PatternsLoaded.Add(new Pattern("AKPK"));
+
             UpdateCache();
         }
 

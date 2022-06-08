@@ -30,7 +30,7 @@ namespace BankDumperLib
             // This is a example of loading magic numbers from a file
             using var patternsFile = File.Open(Path.Combine(AppContext.BaseDirectory, "patterns.json"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
 
-            // This fills a sample file
+            // This fills the sample file if it's empty
             if (patternsFile.Length == 0)
             {
                 var sample = new List<Pattern>()
@@ -42,6 +42,7 @@ namespace BankDumperLib
 
                 JsonSerializer.Serialize(patternsFile, sample);
 
+                // Seek to the beggining of the file so it can be read
                 patternsFile.Position = 0;
             }
 
