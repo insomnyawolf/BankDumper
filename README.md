@@ -1,8 +1,20 @@
 # BankDumper
-FMOD Bank Dumper
 
-Dump FMOD banks into FSB files.
+This started as a fork of a simple program to dump bank files, now i am trying to make it behave more like a library that anyone could use for simple file analysis.
 
-Please note this is a work in progress and by default it will only really work files that have one FSB5, BKHD or AKPK headers.
+Any help / suggestions are appreciated.
 
-You can add your own custom headers by yourself but it would be fine if you let me know so i can add them as well
+## Usage example
+
+```cs
+using var input = File.Open(args[0], FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+
+var result = FileTools.Analyze(input);
+
+Console.WriteLine(result.ToString());
+
+foreach (var pattern in result.Matches)
+{
+    // Do what you want here
+}
+```

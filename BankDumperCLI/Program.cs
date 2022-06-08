@@ -59,7 +59,7 @@ namespace BankDumperLib
                 }
             }
 
-            using var input = File.Open(args[0], FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+            using var input = File.Open(args[0], FileMode.Open, FileAccess.Read, FileShare.Read);
 
             var result = FileTools.Analyze(input);
 
