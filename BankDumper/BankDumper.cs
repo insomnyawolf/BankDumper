@@ -156,15 +156,15 @@ namespace BankDumperLib
                 // then save it
                 if (currentPatternMatch != null)
                 {
-                    currentPatternMatch.PositionEnd = input.Position - pattern.Bytes.LongLength;
-                    patternMatches.Patterns.Add(currentPatternMatch);
+                    currentPatternMatch.PositionEnd = input.Position - pattern.Bytes.LongLength - 1;
+                    patternMatches.Matches.Add(currentPatternMatch);
                 }
 
                 // create a item with the data for the currently detected pattern
                 currentPatternMatch = new PatternMatch()
                 {
                     Pattern = pattern,
-                    PositionStartWithoutNumber = input.Position,
+                    PositionStartWithoutPattern = input.Position,
                 };
             }
 
@@ -172,7 +172,7 @@ namespace BankDumperLib
             if (currentPatternMatch != null)
             {
                 currentPatternMatch.PositionEnd = input.Position - 1;
-                patternMatches.Patterns.Add(currentPatternMatch);
+                patternMatches.Matches.Add(currentPatternMatch);
             }
 
             return patternMatches;

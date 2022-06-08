@@ -64,6 +64,11 @@ namespace BankDumperLib
             var result = FileTools.Analyze(input);
 
             Console.WriteLine(result.ToString());
+
+            foreach (var pattern in result.Matches)
+            {
+                // Do what you want here
+            }
         }
     }
 }

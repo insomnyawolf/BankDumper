@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.IO;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace BankDumperLib
 {
@@ -41,6 +42,7 @@ namespace BankDumperLib
         public string Name { get; }
         [JsonConverter(typeof(ByteArrayConverter))]
         public byte[] Bytes { get; }
+        public int Length { get => Bytes.Length; }
         public PatternFile? PatternFile { get; }
 
         [JsonConstructor]
@@ -98,11 +100,25 @@ namespace BankDumperLib
     public class PatternMatch
     {
         public Pattern Pattern { get; internal set; }
-        public long PositionStart { get => PositionStartWithoutNumber - Pattern.Bytes.Length; }
+        public long PositionStart { get => PositionStartWithoutPattern - Pattern.Length; }
         public long PositionEnd { get; internal set; }
-        public long Length { get => PositionEnd - PositionStart; }
-        public long PositionStartWithoutNumber { get; internal set; }
-        public long LengthWithoutNumber { get => PositionEnd - PositionStartWithoutNumber; }
+
+        public long Length
+        {
+            get
+            {
+                var length = PositionEnd - PositionStart;
+
+                // +1 because 0 is a valid adress
+                if (PositionStart == 0)
+                {
+                    return length + 1;
+                }
+                return length;
+            }
+        }
+        public long PositionStartWithoutPattern { get; internal set; }
+        public long LengthWithoutPattern { get => Length - Pattern.Length; }
 
         public override string ToString()
         {
@@ -112,27 +128,41 @@ namespace BankDumperLib
 
     public class PatternMatches
     {
+        // I'm using this to prevent multithreading issues
+        private EventWaitHandle EventWaitHandle = new EventWaitHandle(true, EventResetMode.ManualReset);
         internal Stream Stream { get; }
-        public List<PatternMatch> Patterns { get; } = new List<PatternMatch>();
+        public List<PatternMatch> Matches { get; } = new List<PatternMatch>();
 
         internal PatternMatches(Stream stream)
         {
             Stream = stream;
         }
 
-        public MemoryStream ExtractWithHeader()
+        public void ExtractWithPatternTo(PatternMatch PatternMatch, Stream target)
         {
-            throw new NotImplementedException();
+            EventWaitHandle.WaitOne();
+
+            Stream.Position = PatternMatch.PositionStart;
+
+            Stream.CopyTo(target, (int)PatternMatch.Length);
+
+            EventWaitHandle.Set();
         }
 
-        public MemoryStream ExtractWithoutHeader()
+        public void ExtractWithoutPatternTo(PatternMatch PatternMatch, Stream target)
         {
-            throw new NotImplementedException();
+            EventWaitHandle.WaitOne();
+
+            Stream.Position = PatternMatch.PositionStartWithoutPattern;
+
+            Stream.CopyTo(target, (int)PatternMatch.LengthWithoutPattern);
+
+            EventWaitHandle.Set();
         }
 
         public override string ToString()
         {
-            return JsonSerializer.Serialize(Patterns);
+            return JsonSerializer.Serialize(Matches);
         }
     }
 }
