@@ -28,10 +28,10 @@ namespace BankDumperLib
             //}
 
             // This is a example of loading magic numbers from a file
-            using var magicNumbersFile = File.Open(Path.Combine(AppContext.BaseDirectory, "patterns.json"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+            using var patternsFile = File.Open(Path.Combine(AppContext.BaseDirectory, "patterns.json"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
 
             // This fills a sample file
-            if (magicNumbersFile.Length == 0)
+            if (patternsFile.Length == 0)
             {
                 var sample = new List<Pattern>()
                 {
@@ -40,21 +40,21 @@ namespace BankDumperLib
                     new Pattern("AKPK"),
                 };
 
-                JsonSerializer.Serialize(magicNumbersFile, sample);
+                JsonSerializer.Serialize(patternsFile, sample);
 
-                magicNumbersFile.Position = 0;
+                patternsFile.Position = 0;
             }
 
-            var magicNumbers = JsonSerializer.Deserialize<List<Pattern>>(magicNumbersFile);
+            var patterns = JsonSerializer.Deserialize<List<Pattern>>(patternsFile);
 
             // Validations are never bad
-            if (magicNumbers != null)
+            if (patterns != null)
             {
-                foreach (var number in magicNumbers)
+                foreach (var pattern in patterns)
                 {
-                    if (!FileTools.TryAddPattern(number))
+                    if (!FileTools.TryAddPattern(pattern))
                     {
-                        Console.WriteLine($"Could not add => '{number.Name}', it already exists.");
+                        Console.WriteLine($"Could not add => '{pattern.Name}', it already exists.");
                     }
                 }
             }
