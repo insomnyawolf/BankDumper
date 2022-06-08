@@ -2,7 +2,7 @@
   "profiles": {
     "BankDumperCLI": {
       "commandName": "Project",
-      "commandLineArgs": "\"D:\\Code\\C#\\BankDumper\\BankDumperCLI\\TestFiles\\sounds_fre_music.pck\"\r\n\"D:\\Code\\C#\\BankDumper\\BankDumperCLI\\TestFiles\\sounds_fre_music_out_{0}.dat\"\r\n\"--force\""
+      "commandLineArgs": "\"D:\\Code\\C#\\BankDumper\\BankDumperCLI\\TestFiles\\sounds_fre_music.pck\""
     }
   }
 }

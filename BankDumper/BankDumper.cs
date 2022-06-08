@@ -4,35 +4,43 @@ using System.IO;
 
 namespace BankDumperLib
 {
-    public static class BankDumper
+    public static class FileTools
     {
-        private static readonly List<MagicNumber> MagicNumbers = new List<MagicNumber>();
+        private static readonly List<Pattern> PatternsLoaded = new List<Pattern>();
 
         private static int LargestPattern = 0;
+        private static int ShortestPattern = int.MaxValue;
 
         private static void UpdateCache()
         {
             // Initialize data that will be helpful later
-            for (int MagicNumberIndex = 0; MagicNumberIndex < MagicNumbers.Count; MagicNumberIndex++)
+            for (int MagicNumberIndex = 0; MagicNumberIndex < PatternsLoaded.Count; MagicNumberIndex++)
             {
-                var current = MagicNumbers[MagicNumberIndex];
+                var current = PatternsLoaded[MagicNumberIndex];
 
-                if (LargestPattern < current.Bytes.Length)
+                var currentLenght = current.Bytes.Length;
+
+                if (LargestPattern < currentLenght)
                 {
-                    LargestPattern = current.Bytes.Length;
+                    LargestPattern = currentLenght;
+                }
+
+                if (ShortestPattern > currentLenght)
+                {
+                    ShortestPattern = currentLenght;
                 }
             }
         }
 
         public static void LoadDefaultMagicNumbers()
         {
-            MagicNumbers.Add(new MagicNumber("FSB5"));
-            MagicNumbers.Add(new MagicNumber("BKHD"));
-            MagicNumbers.Add(new MagicNumber("AKPK"));
+            PatternsLoaded.Add(new Pattern("FSB5"));
+            PatternsLoaded.Add(new Pattern("BKHD"));
+            PatternsLoaded.Add(new Pattern("AKPK"));
             UpdateCache();
         }
 
-        public static bool TryAddMagicNumber(MagicNumber number)
+        public static bool TryAddPattern(Pattern number)
         {
             var result = TryFindPattern(number.Bytes);
             if (result != null)
@@ -42,7 +50,13 @@ namespace BankDumperLib
                 return false;
             }
 
-            MagicNumbers.Add(number);
+            if (number.Bytes.Length < 1)
+            {
+                return false;
+            }
+
+            PatternsLoaded.Add(number);
+
             UpdateCache();
             // Added!
             return true;
@@ -50,11 +64,11 @@ namespace BankDumperLib
 
         public static bool TryRemoveMagicNumber(string name)
         {
-            for (int i = 0; i < MagicNumbers.Count; i++)
+            for (int i = 0; i < PatternsLoaded.Count; i++)
             {
-                if (MagicNumbers[i].Text == name)
+                if (PatternsLoaded[i].Name == name)
                 {
-                    MagicNumbers.RemoveAt(i);
+                    PatternsLoaded.RemoveAt(i);
                     UpdateCache();
                     //Removed Sucessfully
                     return true;
@@ -70,14 +84,16 @@ namespace BankDumperLib
         /// </summary>
         /// <param name="value"></param>
         /// <returns>Pattern matched or null</returns>
-        private static MagicNumber? TryFindPattern(byte[] value)
+        private static Pattern? TryFindPattern(byte[] value)
         {
-            for (int MagicNumberIndex = 0; MagicNumberIndex < MagicNumbers.Count; MagicNumberIndex++)
+            for (int MagicNumberIndex = 0; MagicNumberIndex < PatternsLoaded.Count; MagicNumberIndex++)
             {
-                var current = MagicNumbers[MagicNumberIndex];
+                var current = PatternsLoaded[MagicNumberIndex];
                 if (EndsWithPattern(value, current.Bytes))
                 {
-                    Console.WriteLine($"Detected => {current.Text}");
+#if DEBUG
+                    Console.WriteLine($"Detected => {current.Name}");
+#endif
                     return current;
                 }
             }
@@ -102,12 +118,16 @@ namespace BankDumperLib
             return true;
         }
 
-        public static MagicNumberFound? Extract(Stream input, Stream output)
+        public static PatternMatches Analyze(Stream input)
         {
             var searchBuffer = new byte[LargestPattern];
             var searchBufferLastPosition = searchBuffer.Length - 1;
 
 #warning Can be optimized by reading as many bytes as the shortest pattern has in a single go, it won't help performance that much but it's something
+
+            var patternMatches = new PatternMatches(input);
+
+            PatternMatch? currentPatternMatch = null;
 
             // Input Loop
             int currentByte;
@@ -116,56 +136,46 @@ namespace BankDumperLib
             // Wait why does readbyte returns int???
             while ((currentByte = input.ReadByte()) != -1)
             {
-                searchBuffer[searchBufferLastPosition] = (byte)currentByte;
-
-                var pattern = TryFindPattern(searchBuffer);
-                if (pattern != null)
-                {
-                    // Pattern dettected
-
-                    // Save useful Data before writing the rest of the file beacuse it will move the position
-                    var data = new MagicNumberFound()
-                    {
-                        Pattern = pattern,
-                        Position = input.Position - pattern.Bytes.Length,
-                    };
-
-                    // That should copy from the current position to the end of the stream
-                    input.CopyTo(output);
-                    return data;
-                }
-
-                // Shift Bytes
+                // Shift Bytes 
                 for (int i = 0; i < searchBufferLastPosition; i++)
                 {
                     searchBuffer[i] = searchBuffer[i + 1];
                 }
+
+                searchBuffer[searchBufferLastPosition] = (byte)currentByte;
+
+                var pattern = TryFindPattern(searchBuffer);
+
+                // no pattern found, skip to next loop iteration
+                if (pattern == null)
+                {
+                    continue;
+                }
+
+                // Previously dettected pattern need to store it's ending position
+                // then save it
+                if (currentPatternMatch != null)
+                {
+                    currentPatternMatch.PositionEnd = input.Position - pattern.Bytes.LongLength;
+                    patternMatches.Patterns.Add(currentPatternMatch);
+                }
+
+                // create a item with the data for the currently detected pattern
+                currentPatternMatch = new PatternMatch()
+                {
+                    Pattern = pattern,
+                    PositionStartWithoutNumber = input.Position,
+                };
             }
 
-            // No patterns were matched.
-            return null;
-        }
-
-        /// <summary>
-        /// Shorten the stream so it only contains the data needed and nothing after it
-        /// </summary>
-        /// <remarks>
-        /// TAKE CARE, THIS ONE MODIFIES THE INPUT STREAM
-        /// </remarks>
-        /// <param name="input"></param>
-        /// <param name="output"></param>
-        /// <returns></returns>
-        public static MagicNumberFound? ExtractAndCut(Stream input, Stream output)
-        {
-            var found = Extract(input, output);
-
-            if (found != null)
+            // end of file fix for the last pattern match
+            if (currentPatternMatch != null)
             {
-#warning i don't know if that's supported on all kinds of streams
-                input.SetLength(found.Position);
+                currentPatternMatch.PositionEnd = input.Position - 1;
+                patternMatches.Patterns.Add(currentPatternMatch);
             }
 
-            return found;
+            return patternMatches;
         }
     }
 }

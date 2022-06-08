@@ -12,7 +12,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="magicNumbers.json">
+		<None Update="patterns.json">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>

@@ -1,0 +1,22 @@
+[
+    {
+        "Name": "FSB5",
+        "Bytes": null,
+        "PatternFile": null
+    },
+    {
+        "Name": "BKHD",
+        "Bytes": null,
+        "PatternFile": null
+    },
+  {
+    "Name": "AKPK",
+    "Bytes": [
+      65,
+      75,
+      80,
+      75
+    ],
+    "PatternFile": null
+  }
+]
