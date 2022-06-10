@@ -1,7 +1,8 @@
-﻿using System.Runtime.InteropServices;
+﻿using BinaryFileTools;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 
-namespace BinaryFileTools
+namespace BankDumperCLI
 {
     internal class Program
     {
@@ -24,6 +25,7 @@ namespace BinaryFileTools
             }
             else
             {
+                // allright, i'm just lazy today
                 throw new PlatformNotSupportedException();
             }
 
