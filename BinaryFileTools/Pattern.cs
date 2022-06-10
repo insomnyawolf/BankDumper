@@ -17,18 +17,21 @@ namespace BinaryFileTools
         {
             this.Name = Name;
 
-            if (Bytes == null)
-            {
-                this.Bytes = Encoding.ASCII.GetBytes(Name);
-            }
-            else if (PatternFile != null)
+            // Get bytes from the file
+            if (PatternFile != null)
             {
                 this.PatternFile = PatternFile;
                 this.Bytes = PatternFile.GetPattern();
             }
-            else
+            // Get Bytes from the byte array
+            else if (Bytes != null)
             {
                 this.Bytes = Bytes;
+            }
+            // Get bytes form the name
+            else
+            {
+                this.Bytes = Encoding.ASCII.GetBytes(Name);
             }
         }
     }
