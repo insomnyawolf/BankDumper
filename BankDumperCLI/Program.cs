@@ -1,34 +1,31 @@
-﻿using System.Text.Json;
+﻿using System.Runtime.InteropServices;
+using System.Text.Json;
 
-namespace BankDumperLib
+namespace BinaryFileTools
 {
     internal class Program
     {
         static void Main(string[] args)
         {
-            if (args.Length < 1 || args.Length > 1)
-            {
-                Console.WriteLine();
-                Console.WriteLine(" " + AppDomain.CurrentDomain.FriendlyName + " <input> <output> [--force]");
-                Environment.Exit(1);
-            }
-
-            if (!File.Exists(args[0]))
-            {
-                Console.WriteLine("Input file doesn't exist.");
-                Environment.Exit(1);
-            }
-
-            //var force = args.Length == 3 && args[2] == "--force";
-            //var outputAlreadyExists = File.Exists(args[1]);
-            //if (!force && outputAlreadyExists)
-            //{
-            //    Console.WriteLine("Output file already exist, add '--force' to overwrite.");
-            //    Environment.Exit(1);
-            //}
-
             // This is a example of loading magic numbers from a file
             using var patternsFile = File.Open(Path.Combine(AppContext.BaseDirectory, "patterns.json"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
+
+            char osMarker;
+            string executableName = AppDomain.CurrentDomain.FriendlyName;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                osMarker = '>';
+                executableName += ".exe";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                osMarker = '$';
+            }
+            else
+            {
+                throw new PlatformNotSupportedException();
+            }
 
             // This fills the sample file if it's empty
             if (patternsFile.Length == 0)
@@ -38,12 +35,29 @@ namespace BankDumperLib
                     new Pattern("FSB5"),
                     new Pattern("BKHD"),
                     new Pattern("AKPK"),
+                    new Pattern("FileSample", null, new PatternFile(executableName, 0, 6))
                 };
 
                 JsonSerializer.Serialize(patternsFile, sample);
 
                 // Seek to the beggining of the file so it can be read
                 patternsFile.Position = 0;
+            }
+
+            if (args.Length != 1)
+            {
+                Console.WriteLine();
+
+                
+
+                Console.WriteLine(osMarker + executableName + " <input>");
+                Environment.Exit(1);
+            }
+
+            if (!File.Exists(args[0]))
+            {
+                Console.WriteLine("Input file doesn't exist.");
+                Environment.Exit(1);
             }
 
             var patterns = JsonSerializer.Deserialize<List<Pattern>>(patternsFile);

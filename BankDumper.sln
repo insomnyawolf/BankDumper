@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankDumperCLI", "BankDumperCLI\BankDumperCLI.csproj", "{FC73E3E8-8937-46A2-A32D-529B9F75E794}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankDumper", "BankDumper\BankDumper.csproj", "{5EEDCDDF-9C0A-4781-8875-C584B76D7F5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankDumperLib", "BankDumper\BankDumperLib.csproj", "{5EEDCDDF-9C0A-4781-8875-C584B76D7F5F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

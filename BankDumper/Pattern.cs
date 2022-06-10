@@ -1,42 +1,9 @@
-﻿using System;
-using System.Text;
-using System.Runtime.CompilerServices;
-using System.Text.Json;
+﻿using System.Text;
 using System.Text.Json.Serialization;
 using System.IO;
-using System.Collections.Generic;
-using System.Threading;
 
-namespace BankDumperLib
+namespace BinaryFileTools
 {
-    // You can't easily read/write byte[] without a custom converter like thisone
-    internal class ByteArrayConverter : JsonConverter<byte[]>
-    {
-        public override byte[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        {
-            var charArray = JsonSerializer.Deserialize<sbyte[]>(ref reader);
-
-            if (charArray == null)
-            {
-                return null;
-            }
-
-            return Unsafe.As<byte[]>(charArray);
-        }
-
-        public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
-        {
-            writer.WriteStartArray();
-
-            for (int i = 0; i < value.Length; i++)
-            {
-                writer.WriteNumberValue(value[i]);
-            }
-
-            writer.WriteEndArray();
-        }
-    }
-
     public class Pattern
     {
         public string Name { get; }
@@ -50,14 +17,14 @@ namespace BankDumperLib
         {
             this.Name = Name;
 
-            if (PatternFile != null)
+            if (Bytes == null)
+            {
+                this.Bytes = Encoding.ASCII.GetBytes(Name);
+            }
+            else if (PatternFile != null)
             {
                 this.PatternFile = PatternFile;
                 this.Bytes = PatternFile.GetPattern();
-            }
-            else if (Bytes == null)
-            {
-                this.Bytes = Encoding.ASCII.GetBytes(Name);
             }
             else
             {
@@ -94,75 +61,6 @@ namespace BankDumperLib
             }
 
             return pattern;
-        }
-    }
-
-    public class PatternMatch
-    {
-        public Pattern Pattern { get; internal set; }
-        public long PositionStart { get => PositionStartWithoutPattern - Pattern.Length; }
-        public long PositionEnd { get; internal set; }
-
-        public long Length
-        {
-            get
-            {
-                var length = PositionEnd - PositionStart;
-
-                // +1 because 0 is a valid adress
-                if (PositionStart == 0)
-                {
-                    return length + 1;
-                }
-                return length;
-            }
-        }
-        public long PositionStartWithoutPattern { get; internal set; }
-        public long LengthWithoutPattern { get => Length - Pattern.Length; }
-
-        public override string ToString()
-        {
-            return JsonSerializer.Serialize(this);
-        }
-    }
-
-    public class PatternMatches
-    {
-        // I'm using this to prevent multithreading issues
-        private EventWaitHandle EventWaitHandle = new EventWaitHandle(true, EventResetMode.ManualReset);
-        internal Stream Stream { get; }
-        public List<PatternMatch> Matches { get; } = new List<PatternMatch>();
-
-        internal PatternMatches(Stream stream)
-        {
-            Stream = stream;
-        }
-
-        public void ExtractWithPatternTo(PatternMatch PatternMatch, Stream target)
-        {
-            EventWaitHandle.WaitOne();
-
-            Stream.Position = PatternMatch.PositionStart;
-
-            Stream.CopyTo(target, (int)PatternMatch.Length);
-
-            EventWaitHandle.Set();
-        }
-
-        public void ExtractWithoutPatternTo(PatternMatch PatternMatch, Stream target)
-        {
-            EventWaitHandle.WaitOne();
-
-            Stream.Position = PatternMatch.PositionStartWithoutPattern;
-
-            Stream.CopyTo(target, (int)PatternMatch.LengthWithoutPattern);
-
-            EventWaitHandle.Set();
-        }
-
-        public override string ToString()
-        {
-            return JsonSerializer.Serialize(Matches);
         }
     }
 }

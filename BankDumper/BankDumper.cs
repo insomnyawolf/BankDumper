@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace BankDumperLib
+namespace BinaryFileTools
 {
     public static class FileTools
     {
@@ -32,6 +32,7 @@ namespace BankDumperLib
             }
         }
 
+        // is this needed?
         public static void LoadDefaultPatterns()
         {
             PatternsLoaded.Add(new Pattern("FSB5"));

@@ -8,13 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\BankDumper\BankDumper.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="patterns.json">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
+	  <ProjectReference Include="..\BankDumper\BankDumperLib.csproj" />
 	</ItemGroup>
 
 </Project>
