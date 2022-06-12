@@ -69,7 +69,7 @@ namespace BankDumperCLI
             {
                 foreach (var pattern in patterns)
                 {
-                    if (!FileTools.TryAddPattern(pattern))
+                    if (!BinaryTools.TryAddPattern(pattern))
                     {
                         Console.WriteLine($"Could not add => '{pattern.Name}', it already exists.");
                     }
@@ -78,7 +78,7 @@ namespace BankDumperCLI
 
             using var input = File.Open(args[0], FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            var result = FileTools.Analyze(input);
+            var result = BinaryTools.Analyze(input);
 
             Console.WriteLine(result.ToString());
 
