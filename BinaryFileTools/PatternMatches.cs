@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 using System.Threading;
 
 namespace BinaryFileTools
@@ -17,26 +16,76 @@ namespace BinaryFileTools
             Stream = stream;
         }
 
-        public void ExtractWithPatternTo(PatternMatch PatternMatch, Stream target)
+        /// <summary>
+        /// Replace bytes at the offset provided
+        /// </summary>
+        /// <param name="PatternMatch"></param>
+        /// <param name="newBytes"></param>
+        public void ReplaceAtPosition(long offset, Stream newBytes)
         {
             EventWaitHandle.WaitOne();
 
-            Stream.Position = PatternMatch.PositionStart;
+            Stream.Position = offset;
 
-            Stream.CopyTo(target, (int)PatternMatch.Length);
+            newBytes.CopyTo(Stream);
 
             EventWaitHandle.Set();
         }
 
-        public void ExtractWithoutPatternTo(PatternMatch PatternMatch, Stream target)
+        /// <summary>
+        /// Replace bytes on the pattern provided (includes the pattern on the replaced bytes)
+        /// </summary>
+        /// <param name="PatternMatch"></param>
+        /// <param name="newBytes"></param>
+        public void ReplaceAtPattern(PatternMatch PatternMatch, Stream newBytes)
+        {
+            ReplaceAtPosition(PatternMatch.PositionStart, newBytes);
+        }
+
+        /// <summary>
+        /// Replace bytes after the pattern provided
+        /// </summary>
+        /// <param name="PatternMatch"></param>
+        /// <param name="newBytes"></param>
+        public void ReplaceAfterPattern(PatternMatch PatternMatch, Stream newBytes)
+        {
+            ReplaceAtPosition(PatternMatch.PositionStartWithoutPattern, newBytes);
+        }
+
+        /// <summary>
+        /// Copy the defined section of the stream into the stream provided
+        /// </summary>
+        /// <param name="PatternMatch"></param>
+        /// <param name="target"></param>
+        public void ExtractBytesTo(long offset, int length, Stream target)
         {
             EventWaitHandle.WaitOne();
 
-            Stream.Position = PatternMatch.PositionStartWithoutPattern;
+            Stream.Position = offset;
 
-            Stream.CopyTo(target, (int)PatternMatch.LengthWithoutPattern);
+            Stream.CopyTo(target, length);
 
             EventWaitHandle.Set();
+        }
+
+        /// <summary>
+        /// Copy the section defined by PatternMatch into the stream provided (includes the pattern)
+        /// </summary>
+        /// <param name="PatternMatch"></param>
+        /// <param name="target"></param>
+        public void ExtractWithPatternTo(PatternMatch PatternMatch, Stream target)
+        {
+            ExtractBytesTo(PatternMatch.PositionStart, (int)PatternMatch.Length, target);
+        }
+
+        /// <summary>
+        /// Copy the section defined by PatternMatch into the stream provided (does not include the pattern)
+        /// </summary>
+        /// <param name="PatternMatch"></param>
+        /// <param name="target"></param>
+        public void ExtractWithoutPatternTo(PatternMatch PatternMatch, Stream target)
+        {
+            ExtractBytesTo(PatternMatch.PositionStartWithoutPattern, (int)PatternMatch.LengthWithoutPattern, target);
         }
 
         public override string ToString()

@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 
 namespace BinaryFileTools
 {
-    public static class FileTools
+    public static class BinaryTools
     {
         private static readonly List<Pattern> PatternsLoaded = new List<Pattern>();
 
@@ -14,11 +13,11 @@ namespace BinaryFileTools
         private static void UpdateCache()
         {
             // Initialize data that will be helpful later
-            for (int MagicNumberIndex = 0; MagicNumberIndex < PatternsLoaded.Count; MagicNumberIndex++)
+            for (int PatternIndex = 0; PatternIndex < PatternsLoaded.Count; PatternIndex++)
             {
-                var current = PatternsLoaded[MagicNumberIndex];
+                var current = PatternsLoaded[PatternIndex];
 
-                var currentLenght = current.Bytes.Length;
+                var currentLenght = current.Length;
 
                 if (LargestPattern < currentLenght)
                 {
@@ -30,6 +29,14 @@ namespace BinaryFileTools
                     ShortestPattern = currentLenght;
                 }
             }
+
+            var tempList = new List<Pattern>();
+
+            Pattern tempPatternStorage = null;
+            var currentOrderIndex = PatternsLoaded.Count;
+
+            // Longer patterns should take priority over shorter patterns
+            SortHelper.SelectionSort(PatternsLoaded, (a, b) => a.Length > b.Length);
         }
 
         // is this needed?
@@ -93,9 +100,6 @@ namespace BinaryFileTools
                 var current = PatternsLoaded[MagicNumberIndex];
                 if (EndsWithPattern(value, current.Bytes))
                 {
-#if DEBUG
-                    Console.WriteLine($"Detected => {current.Name}");
-#endif
                     return current;
                 }
             }
