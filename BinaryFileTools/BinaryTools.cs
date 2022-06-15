@@ -108,19 +108,23 @@ namespace BinaryFileTools
 
         private static bool EndsWithPattern(byte[] value, byte[] pattern)
         {
-#warning maybe optimize this
-            if (pattern.Length > value.Length)
-            {
-                return false;
-            }
+            // value has to have the same length or more than the pattern always 
 
-            for (int i = pattern.Length - 1; i > -1; i--)
+            var index = value.Length - 1;
+            var patterChecksRemeaning = pattern.Length;
+
+            // we check once per pattern byte
+            while (patterChecksRemeaning > 0)
             {
-                if (value[i] != pattern[i])
+                if (value[index] != pattern[index])
                 {
                     return false;
                 }
+
+                index--;
+                patterChecksRemeaning--;
             }
+
             return true;
         }
 
@@ -129,15 +133,13 @@ namespace BinaryFileTools
             var searchBuffer = new byte[LargestPattern];
             var searchBufferLastPosition = searchBuffer.Length - 1;
 
-#warning Can be optimized by reading as many bytes as the shortest pattern has in a single go, it won't help performance that much but it's something
-
             var patternMatches = new PatternMatches(input);
 
             PatternMatch? currentPatternMatch = null;
 
             // Input Loop
             int currentByte;
-#warning Reading it like that will kill the performance, needs to be updated
+#warning Reading it like that will kill the performance, maybe needs to be updated
             // -1 means that there are no more bytes available
             // Wait why does readbyte returns int???
             while ((currentByte = input.ReadByte()) != -1)
