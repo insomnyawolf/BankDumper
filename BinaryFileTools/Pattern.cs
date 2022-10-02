@@ -4,16 +4,49 @@ using System.IO;
 
 namespace BinaryFileTools
 {
-    public class Pattern
+    public abstract class BasePattern
     {
-        public string Name { get; }
+        public string Name { get; protected set; }
+
         [JsonConverter(typeof(ByteArrayConverter))]
-        public byte[] Bytes { get; }
+        public byte[] Bytes { get; protected set; }
         public int Length { get => Bytes.Length; }
+
+        public BasePattern(string Name, byte[] Bytes = null)
+        {
+            this.Name = Name;
+
+            // Get Bytes from the byte array
+            if (Bytes != null)
+            {
+                this.Bytes = Bytes;
+            }
+            // Get bytes form the name
+            else
+            {
+                this.Bytes = Encoding.ASCII.GetBytes(Name);
+            }
+        }
+
+        public virtual Stream GetReader(Stream target)
+        {
+            // need to modify reader methods
+            return target;
+        }
+
+        public virtual Stream GetWriter(Stream target)
+        {
+            // need to modify writer methods
+            return target;
+        }
+    }
+
+    public class PatternSettings : BasePattern
+    {
         public PatternFile? PatternFile { get; }
 
         [JsonConstructor]
-        public Pattern(string Name, byte[]? Bytes = null, PatternFile? PatternFile = null)
+        public PatternSettings(string Name, byte[]? Bytes = null, PatternFile? PatternFile = null) : base(Name, Bytes)
         {
             this.Name = Name;
 

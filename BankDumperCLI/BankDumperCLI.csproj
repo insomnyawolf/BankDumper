@@ -8,6 +8,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\BinaryFileToolsPatterns\BinaryFileToolsPatterns.csproj" />
 	  <ProjectReference Include="..\BinaryFileTools\BinaryFileTools.csproj" />
 	</ItemGroup>
 

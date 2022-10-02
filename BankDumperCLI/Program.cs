@@ -1,4 +1,5 @@
 ﻿using BinaryFileTools;
+using BinaryFileToolsPatterns;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 
@@ -32,12 +33,12 @@ namespace BankDumperCLI
             // This fills the sample file if it's empty
             if (patternsFile.Length == 0)
             {
-                var sample = new List<Pattern>()
+                var sample = new List<PatternSettings>()
                 {
-                    new Pattern("FSB5"),
-                    new Pattern("BKHD"),
-                    new Pattern("AKPK"),
-                    new Pattern("FileSample", null, new PatternFile(executableName, 0, 6))
+                    new PatternSettings("FSB5"),
+                    new PatternSettings("BKHD"),
+                    new PatternSettings("AKPK"),
+                    new PatternSettings("FileSample", null, new PatternFile(executableName, 0, 6))
                 };
 
                 JsonSerializer.Serialize(patternsFile, sample);
@@ -50,8 +51,6 @@ namespace BankDumperCLI
             {
                 Console.WriteLine();
 
-                
-
                 Console.WriteLine(osMarker + executableName + " <input>");
                 Environment.Exit(1);
             }
@@ -62,14 +61,24 @@ namespace BankDumperCLI
                 Environment.Exit(1);
             }
 
-            var patterns = JsonSerializer.Deserialize<List<Pattern>>(patternsFile);
+            var patternSearch = new PatternSearch();
+
+            patternSearch.AddPatternAKPK();
+            patternSearch.AddPatternBKHD();
+            patternSearch.AddPatternFSB5();
+
+            var patterns = JsonSerializer.Deserialize<List<PatternSettings>>(patternsFile);
 
             // Validations are never bad
+            // ???????????????????
+            // Slice value evaluates as 0 for no apparent reason
+            // Probably related to the custom converter (?)
+
             if (patterns != null)
             {
                 foreach (var pattern in patterns)
                 {
-                    if (!BinaryTools.TryAddPattern(pattern))
+                    if (!patternSearch.TryAddPattern(pattern))
                     {
                         Console.WriteLine($"Could not add => '{pattern.Name}', it already exists.");
                     }
@@ -78,12 +87,35 @@ namespace BankDumperCLI
 
             using var input = File.Open(args[0], FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            var result = BinaryTools.Analyze(input);
+            patternSearch.SetStream(input);
+
+            var result = patternSearch.Analyze();
 
             Console.WriteLine(result.ToString());
 
-            foreach (var pattern in result.Matches)
+            foreach (var pattern in result)
             {
+                // Do what you want here
+            }
+        }
+
+        public void SimplifiedMain()
+        {
+            using var input = File.Open("SamplePath", FileMode.Open, FileAccess.Read, FileShare.Read);
+
+            var patternSearch = new PatternSearch(input);
+
+            patternSearch.AddPatternAKPK();
+            patternSearch.AddPatternBKHD();
+            patternSearch.AddPatternFSB5();
+
+            var result = patternSearch.Analyze();
+
+            Console.WriteLine(result.ToString());
+
+            foreach (var pattern in result)
+            {
+                //pattern.
                 // Do what you want here
             }
         }
