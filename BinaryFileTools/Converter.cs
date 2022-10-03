@@ -7,7 +7,7 @@ namespace BinaryFileTools
     // You can't easily read/write byte[] without a custom converter like thisone
     internal class ByteArrayConverter : JsonConverter<byte[]>
     {
-        public override byte[]? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override byte[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             var charArray = JsonSerializer.Deserialize<uint[]>(ref reader);
 

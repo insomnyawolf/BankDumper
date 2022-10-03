@@ -12,7 +12,7 @@ namespace BinaryFileTools
 
         public Stream Stream { get; private set; }
 
-        public PatternSearch(Stream? Stream = null, List<BasePattern>? PatternsLoaded = null)
+        public PatternSearch(Stream Stream = null, List<BasePattern> PatternsLoaded = null)
         {
             this.Stream = Stream;
 
@@ -113,7 +113,7 @@ namespace BinaryFileTools
 
             var patternMatches = new List<PatternMatch>();
 
-            PatternMatch? currentPatternMatch = null;
+            PatternMatch currentPatternMatch = null;
 
             // Input Loop
             int currentByte;
@@ -169,7 +169,7 @@ namespace BinaryFileTools
         /// </summary>
         /// <param name="value"></param>
         /// <returns>Pattern matched or null</returns>
-        private BasePattern? TryFindPattern(byte[] value)
+        private BasePattern TryFindPattern(byte[] value)
         {
             for (int patternIndex = 0; patternIndex < PatternsLoaded.Count; patternIndex++)
             {

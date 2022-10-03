@@ -43,10 +43,10 @@ namespace BinaryFileTools
 
     public class PatternSettings : BasePattern
     {
-        public PatternFile? PatternFile { get; }
+        public PatternFile PatternFile { get; }
 
         [JsonConstructor]
-        public PatternSettings(string Name, byte[]? Bytes = null, PatternFile? PatternFile = null) : base(Name, Bytes)
+        public PatternSettings(string Name, byte[] Bytes = null, PatternFile PatternFile = null) : base(Name, Bytes)
         {
             this.Name = Name;
 
@@ -85,18 +85,19 @@ namespace BinaryFileTools
 
         internal byte[] GetPattern()
         {
-            using var file = File.Open(Path, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
-
-            var pattern = new byte[Length];
-
-            var bytesRead = file.Read(pattern, Offset, pattern.Length);
-
-            if (bytesRead < Length)
+            using (var file = File.Open(Path, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read))
             {
-                throw new InvalidDataException();
-            }
+                var pattern = new byte[Length];
 
-            return pattern;
+                var bytesRead = file.Read(pattern, Offset, pattern.Length);
+
+                if (bytesRead < Length)
+                {
+                    throw new InvalidDataException();
+                }
+
+                return pattern;
+            }
         }
     }
 }

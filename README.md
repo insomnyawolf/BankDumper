@@ -7,28 +7,19 @@ Any help / suggestions are appreciated.
 ## Usage example
 
 ```cs
-var patterns = new List<Pattern>()
-{
-    new Pattern("FSB5"),
-    new Pattern("BKHD"),
-    new Pattern("AKPK"),
-};
+var patternSearch = new PatternSearch();
 
-foreach (var pattern in patterns)
-{
-    if (!FileTools.TryAddPattern(pattern))
-    {
-        Console.WriteLine($"Could not add => '{pattern.Name}', it already exists.");
-    }
-}
+patternSearch.AddPatternAKPK();
+patternSearch.AddPatternBKHD();
+patternSearch.AddPatternFSB5();
 
-using var input = File.Open(args[0], FileMode.Open, FileAccess.ReadWrite, FileShare.Read);
+using var input = File.Open(args[0], FileMode.Open, FileAccess.Read, FileShare.Read);
 
-var result = FileTools.Analyze(input);
+patternSearch.SetStream(input);
 
-Console.WriteLine(result.ToString());
+var result = patternSearch.Analyze();
 
-foreach (var pattern in result.Matches)
+foreach (var pattern in result)
 {
     // Do what you want here
 }

@@ -7,7 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BankDumperCLI", "BankDumper
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BinaryFileTools", "BinaryFileTools\BinaryFileTools.csproj", "{5EEDCDDF-9C0A-4781-8875-C584B76D7F5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BinaryFileToolsPatterns", "BinaryFileToolsPatterns\BinaryFileToolsPatterns.csproj", "{659D920E-3CFD-4A64-8DBD-59B8D51B9A68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BinaryFileToolsPatterns", "BinaryFileToolsPatterns\BinaryFileToolsPatterns.csproj", "{659D920E-3CFD-4A64-8DBD-59B8D51B9A68}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7223F83C-D8B8-4647-8DCB-C1CB383C0920}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
